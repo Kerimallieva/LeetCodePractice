@@ -2,7 +2,6 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
-
 /* 1462. Course Schedule IV
 >У нас есть набор курсов, которые нужно пройти. Их номера идут от 0 до numCourses - 1.
 >А также есть список prerequisites, где каждая пара [a, b] означает: чтобы пройти курс b, сначала нужно пройти курс a.
@@ -16,36 +15,56 @@ numCourses = 2, prerequisites = [[1, 0]], queries = [[0, 1], [1, 0]]
 - [0, 1]: Курс 0 не обязателен для курса 1.
  *
 * */
+
 public class Solution1462 {
-    public List<Boolean> checkIfPrerequisite(int numCourses, int[][] prerequisites, int[][] queries) {
-        //reachable[i][j] будет обозначать: "Можно ли добраться из курса i до курса j?"
+    /*
+     * Возвращает: List<Boolean> — список булевых значений (true или false).
+     * Каждое значение в списке отвечает на вопрос из queries:
+     * является ли один курс обязательным для другого.
+     *
+     * > int numCourses - это количество курсов
+     *
+     * > int[][] prerequisites - это массив, содержащий зависимости между курсами.
+     * Каждый элемент массива — пара [a, b], где курс a нужно пройти перед курсом b.
+     * Двойные квадратные скобки (int[][]) указывают, что это двумерный массив, где каждый элемент — это массив из двух чисел.
+     *
+     * > int[][] queries - это массив содержащий запросы.
+     * Каждый элемент массива — пара [u, v], где нужно узнать: является ли курс u обязательным для курса v.
+     *
+     * */
+
+    public List<Boolean>  checkIfPrerequisite(int numCourses, int[][] prerequisites, int[][] queries){
+
+        //В данном случае reachable[i][j] будет обозначать: "Можно ли добраться из курса i до курса j?"
         boolean[][] reachable = new boolean[numCourses][numCourses];
 
-
-        //мы проходим по массиву prerequisites и отмечаем прямые зависимости
-        for (int[] pre : prerequisites) {
-            reachable[pre[0]][pre[1]] = true;
+        //В этом цикле мы только устанавливаем прямые зависимости между курсами (те, что явно указаны в массиве prerequisites).
+        //
+        //А проверка всех зависимостей — и прямых, и косвенных — происходит позже, в следующем этапе с использованием алгоритма Флойда-Уоршелла.
+        for (int[] pre: prerequisites){
+            reachable[pre[0]][pre[1]] = true;//: "Из курса pre[0] можно добраться до курса pre[1].", Устанавливаем прямую зависимость
         }
 
-
-        //Найти все зависимости (прямые и косвенные)
-        //Для этого мы применяем алгоритм Флойда-Уоршелла
-        for (int k = 0; k < numCourses; k++) {
-            for (int i = 0; i < numCourses; i++) {
-                for (int j = 0; j < numCourses; j++) {
-                    if (reachable[i][k] && reachable[k][j]) {
+        //тут мы применяем алгоритм Флойда-Уоршелла, в котором ищем последника чтобы
+        // установить связь
+        // Если есть связь i → k и k → j, значит, есть и связь i → j
+        for (int k = 0; k < numCourses; k++){
+            for(int i = 0; i<numCourses; i++){
+                for (int j = 0; j< numCourses; j++){
+                    if(reachable[i][k] && reachable[k][j]){
                         reachable[i][j] = true;
                     }
                 }
             }
         }
 
-
+        //Мы создаём новый список типа List<Boolean>, в котором будем хранить ответы на запросы.
+        // Это список будет содержать значения true или false,
+        // в зависимости от того, является ли один курс обязательным для другого.
         List<Boolean> result = new ArrayList<>();
-        for (int[] query : queries) {
+        for (int[] query: queries){
             result.add(reachable[query[0]][query[1]]);
         }
-
         return result;
     }
 }
